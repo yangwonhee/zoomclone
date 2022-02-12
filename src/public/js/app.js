@@ -5,6 +5,8 @@ const nickForm = document.querySelector("#nick");
 // this socket means server
 const socket = new WebSocket(`ws://${window.location.host}`);
 
+// server 로 object를 그냥 보내면 안됨. back-end에서 무슨 언어를 통해 받을 지 모르기 때문.
+// 그렇기 때문에 object를 JSON.stringify를 통해 string으로 보낸다음, back-end에서 다시 object로 전환해서 사용을 해야함.
 function makeMessage(type, payload) {
   const msg = { type, payload };
   return JSON.stringify(msg);
@@ -43,6 +45,7 @@ function handleNickSubmit(event) {
   event.preventDefault();
   const input = nickForm.querySelector("input");
   socket.send(makeMessage("nickname", input.value));
+  input.value = "";
 }
 
 messageForm.addEventListener("submit", handleSubmit);
