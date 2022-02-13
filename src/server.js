@@ -42,6 +42,7 @@ io.on("connection", (socket) => {
     socket["nickname"] = nickname;
     done();
     socket.to(roomName).emit("welcome", socket.nickname);
+    io.sockets.emit("room_change", publicRooms());
   });
   // socket.on("nickname", (nickname) => {
   //   socket["nickname"] = nickname;
@@ -50,6 +51,9 @@ io.on("connection", (socket) => {
     socket.rooms.forEach((room) =>
       socket.to(room).emit("bye", socket.nickname)
     );
+  });
+  socket.on("disconnect", () => {
+    io.sockets.emit("room_change", publicRooms());
   });
   socket.on("new_message", (msg, roomName, done) => {
     socket.to(roomName).emit("new_message", `${socket.nickname}: ${msg}`);
