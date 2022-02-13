@@ -15,19 +15,26 @@ const httpServer = http.createServer(app);
 const io = SocketIO(httpServer);
 
 io.on("connection", (socket) => {
+  // socket["nickname"] = "Anonymous";
   socket.onAny((event) => {
     console.log(`SocketEvent:${event}`);
   });
-  socket.on("enter_room", (roomName, done) => {
+  socket.on("enter_room", (roomName, nickname, done) => {
     socket.join(roomName);
+    socket["nickname"] = nickname;
     done();
-    socket.to(roomName).emit("welcome");
+    socket.to(roomName).emit("welcome", socket.nickname);
   });
+  // socket.on("nickname", (nickname) => {
+  //   socket["nickname"] = nickname;
+  // });
   socket.on("disconnecting", () => {
-    socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+    socket.rooms.forEach((room) =>
+      socket.to(room).emit("bye", socket.nickname)
+    );
   });
   socket.on("new_message", (msg, roomName, done) => {
-    socket.to(roomName).emit("new_message", msg);
+    socket.to(roomName).emit("new_message", `${socket.nickname}: ${msg}`);
     done();
   });
 });
