@@ -46,6 +46,8 @@ function countRoom(roomName) {
 }
 
 io.on("connection", (socket) => {
+  io.sockets.emit("room_change", publicRooms());
+
   // socket["nickname"] = "Anonymous";
   socket.onAny((event) => {
     console.log(`SocketEvent:${event}`);
@@ -68,36 +70,17 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     io.sockets.emit("room_change", publicRooms());
   });
+  socket.on("change_nickname", (nickname, roomName, done) => {
+    socket["nickname"] = nickname;
+    done();
+    socket
+      .to(roomName)
+      .emit("change_nick", `${socket.nickname} change new nickname!`);
+  });
   socket.on("new_message", (msg, roomName, done) => {
     socket.to(roomName).emit("new_message", `${socket.nickname}: ${msg}`);
     done();
   });
 });
-/*
-const wss = new WebSocket.Server({ server });
-
-function onSocketClose() {
-  console.log("Disconnected from the browser");
-}
-const sockets = [];
-wss.on("connection", (socket) => {
-  sockets.push(socket);
-  socket["nickname"] = "anonymous";
-  console.log("Connected to Browser ✅");
-  socket.on("close", onSocketClose);
-  socket.on("message", (msg) => {
-    const message = JSON.parse(msg);
-    switch (message.type) {
-      case "new_message":
-        sockets.forEach((aSocket) =>
-          aSocket.send(`${socket.nickname}: ${message.payload}`)
-        );
-        break;
-      case "nickname":
-        socket["nickname"] = message.payload;
-    }
-  });
-});
-*/
 
 httpServer.listen(3000, handleListen);

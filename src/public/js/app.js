@@ -15,6 +15,20 @@ function addMessage(message) {
   li.innerText = message;
   ul.appendChild(li);
 }
+// socket.on("bye", (left, newCount) => {
+//   const h4 = room.querySelector("h4");
+//   h4.innerText = `Room ${roomName} (${newCount})`;
+//   addMessage(`📢 ${left} left🥲`);
+// });
+function handleChangeNick(event) {
+  event.preventDefault();
+  const input = room.querySelector("#nickChange input");
+  const value = input.value;
+  socket.emit("change_nickname", value, roomName, () => {
+    addMessage(`✔️ Success to change nickname`);
+  });
+  input.value = "";
+}
 
 function handleMessageSubmit(event) {
   event.preventDefault();
@@ -29,10 +43,12 @@ function handleMessageSubmit(event) {
 function showRoom(newCount) {
   welcome.hidden = true;
   room.hidden = false;
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${newCount})`;
+  const h4 = room.querySelector("h4");
+  h4.innerText = `Room ${roomName} (${newCount})`;
   const msgForm = room.querySelector("#msg");
+  const nickForm = room.querySelector("#nickChange");
   msgForm.addEventListener("submit", handleMessageSubmit);
+  nickForm.addEventListener("submit", handleChangeNick);
 }
 
 // function handleNicknameSubmit(event) {
@@ -57,18 +73,20 @@ function handleRoomSubmit(event) {
 form.addEventListener("submit", handleRoomSubmit);
 
 socket.on("welcome", (user, newCount) => {
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${newCount})`;
-  addMessage(`${user} arrived!`);
+  const h4 = room.querySelector("h4");
+  h4.innerText = `Room ${roomName} (${newCount})`;
+  addMessage(`📢 ${user} arrived👋`);
 });
 
 socket.on("bye", (left, newCount) => {
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${newCount})`;
-  addMessage(`${left} left!`);
+  const h4 = room.querySelector("h4");
+  h4.innerText = `Room ${roomName} (${newCount})`;
+  addMessage(`📢 ${left} left🥲`);
 });
 
 socket.on("new_message", addMessage);
+
+socket.on("change_nick", addMessage);
 
 socket.on("room_change", (rooms) => {
   const roomList = welcome.querySelector("ul");
