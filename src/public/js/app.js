@@ -123,22 +123,42 @@ socket.on("welcome", async () => {
 
 // Socket Code : peer B
 socket.on("offer", async (offer) => {
+  console.log("Received the offer");
   myPeerConnection.setRemoteDescription(offer);
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
+  console.log("Sent the answer");
 });
 
 // Socket Code : peer A again
 socket.on("answer", (answer) => {
+  console.log("received the answer");
   myPeerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice", (ice) => {
+  console.log("received the candidate");
+  myPeerConnection.addIceCandidate(ice);
 });
 
 // RTC code
 
 function makeConnection() {
   myPeerConnection = new RTCPeerConnection();
+  myPeerConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("addstream", handleAddStream);
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  console.log("sent the candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  const peerStream = document.getElementById("peerStream");
+  peerStream.srcObject = data.stream;
 }
