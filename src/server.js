@@ -23,4 +23,15 @@ instrument(io, {
   auth: false,
 });
 
+io.on("connection", (socket) => {
+  socket.on("join_room", (roomName, done) => {
+    socket.join(roomName);
+    done();
+    socket.to(roomName).emit("welcome");
+  });
+  socket.on("offer", (offer, roomName) => {
+    socket.to(roomName).emit("offer", offer);
+  });
+});
+
 httpServer.listen(3000, handleListen);
